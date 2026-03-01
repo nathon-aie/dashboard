@@ -20,6 +20,7 @@ df["Age_Group"] = df["Age_Group"].astype(cat_type)
 available_indicators = [
     {"label": "Daily Phone Hours", "value": "Daily_Phone_Hours"},
     {"label": "Social Media Hours", "value": "Social_Media_Hours"},
+    {"label": "Productivity Score", "value": "Work_Productivity_Score"},
 ]
 
 app = Dash(__name__)
