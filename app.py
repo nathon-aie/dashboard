@@ -47,7 +47,14 @@ app.layout = [
             df,
             names="Device_Type",
             title="Distribution of Device Types",
-        )
+        ),
+    ),
+    dcc.Graph(
+        figure=px.pie(
+            df,
+            names="Age_Group",
+            title="Distribution of Age Groups",
+        ),
     ),
 ]
 
