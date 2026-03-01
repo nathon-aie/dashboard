@@ -25,6 +25,7 @@ y_options = [
     {"label": "Productivity Score", "value": "Work_Productivity_Score"},
     {"label": "Sleep Hours", "value": "Sleep_Hours"},
     {"label": "Stress Level", "value": "Stress_Level"},
+    {"label": "Cafeine Intake (cups)", "value": "Caffeine_Intake_Cups"},
 ]
 
 app = Dash(__name__)
