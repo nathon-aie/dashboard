@@ -39,6 +39,14 @@ app.layout = [
             histfunc="avg",
             category_orders={"Age_Group": labels},
             title="Average Daily Phone Hours by Age Group",
+            color="Age_Group",
+        )
+    ),
+    dcc.Graph(
+        figure=px.pie(
+            df,
+            names="Device_Type",
+            title="Distribution of Device Types",
         )
     ),
 ]
