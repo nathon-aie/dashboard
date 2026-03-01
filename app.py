@@ -13,12 +13,18 @@ df["Age_Group"] = pd.cut(df["Age"], bins=bins, labels=labels)
 cat_type = CategoricalDtype(categories=labels, ordered=True)
 df["Age_Group"] = df["Age_Group"].astype(cat_type)
 
-# รายชื่อคอลัมน์ที่ต้องการให้เลือกดูในกราฟ
-available_indicators = [
+x_options = [
+    {"label": "Age Group", "value": "Age_Group"},
+    {"label": "Gender", "value": "Gender"},
+    {"label": "Occupation", "value": "Occupation"},
+]
+
+y_options = [
     {"label": "Daily Phone Hours", "value": "Daily_Phone_Hours"},
     {"label": "Social Media Hours", "value": "Social_Media_Hours"},
     {"label": "Productivity Score", "value": "Work_Productivity_Score"},
     {"label": "Sleep Hours", "value": "Sleep_Hours"},
+    {"label": "Stress Level", "value": "Stress_Level"},
 ]
 
 app = Dash(__name__)
@@ -29,17 +35,39 @@ app.layout = html.Div(
         # ส่วนของ Dropdown สำหรับเลือกข้อมูล
         html.Div(
             [
-                html.Label("เลือกข้อมูลที่ต้องการแสดงในกราฟ:"),
-                dcc.Dropdown(
-                    id="crossfilter-column",
-                    options=available_indicators,
-                    value="Daily_Phone_Hours",  # ค่าเริ่มต้น
+                html.Div(
+                    [
+                        html.Label("เลือกกลุ่มข้อมูล:"),
+                        dcc.Dropdown(
+                            id="x-axis-select", options=x_options, value="Age_Group"
+                        ),
+                    ],
+                    style={
+                        "width": "45%",
+                        "display": "inline-block",
+                        "padding": "10px",
+                    },
+                ),
+                html.Div(
+                    [
+                        html.Label("เลือกสถิติที่สนใจ:"),
+                        dcc.Dropdown(
+                            id="y-axis-select",
+                            options=y_options,
+                            value="Daily_Phone_Hours",
+                        ),
+                    ],
+                    style={
+                        "width": "45%",
+                        "display": "inline-block",
+                        "padding": "10px",
+                    },
                 ),
             ],
-            style={"width": "40%", "margin": "20px auto"},
+            style={"textAlign": "center", "marginBottom": "20px"},
         ),
         # ส่วนแสดงกราฟ
-        dcc.Graph(id="main-graph"),
+        dcc.Graph(id="dynamic-graph"),
         dcc.Graph(
             figure=px.pie(
                 df,
@@ -71,21 +99,27 @@ app.layout = html.Div(
 
 
 # 3. สร้าง Callback เพื่ออัปเดตกราฟ
-@app.callback(Output("main-graph", "figure"), Input("crossfilter-column", "value"))
-def update_graph(column_name):
-    # สร้างกราฟใหม่ทุกครั้งที่มีการเปลี่ยนค่าใน Dropdown
+@app.callback(
+    Output("dynamic-graph", "figure"),
+    Input("x-axis-select", "value"),
+    Input("y-axis-select", "value"),
+)
+def update_graph(x_col, y_col):
+    # กำหนดเงื่อนไขการเรียงลำดับ (เฉพาะ Age_Group)
+    order = {"Age_Group": labels} if x_col == "Age_Group" else None
+
+    # สร้างกราฟ Histogram (ค่าเฉลี่ย)
     fig = px.histogram(
         df,
-        x="Age_Group",
-        y=column_name,
+        x=x_col,
+        y=y_col,
         histfunc="avg",
-        category_orders={"Age_Group": labels},
-        title=f"Average {column_name.replace('_', ' ')} by Age Group",
-        color="Age_Group",
+        category_orders=order,
+        title=f"Average {y_col.replace('_', ' ')} by {x_col.replace('_', ' ')}",
+        color=x_col,
     )
 
-    # # ปรับแต่งความสวยงามเพิ่มเติม
-    fig.update_layout(yaxis_title="Average Value")
+    fig.update_layout(yaxis_title="Average Value", transition_duration=500)
     return fig
 
 
