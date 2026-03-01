@@ -4,7 +4,6 @@ import dash_ag_grid as dag
 import pandas as pd
 import plotly.express as px
 
-# 1. เตรียมข้อมูล (ตรวจสอบ Path ไฟล์ให้ถูกต้อง)
 df = pd.read_csv("Dataset/Smartphone_Usage_Productivity_Dataset_50000.csv")
 
 bins = [0, 20, 30, 40, 50, 100]
@@ -35,9 +34,22 @@ app.layout = html.Div(
     [
         html.H1(
             "Smartphone Usage Dashboard",
-            style={"textAlign": "center", "marginBottom": "30px"},
+            style={
+                "textAlign": "center",
+                "marginBottom": "30px",
+                "padding": "20px",
+                "border": "3px solid #333",
+                "borderRadius": "15px",
+                "backgroundColor": "#ffffff",
+                "display": "block",
+                "width": "fit-content",
+                "marginLeft": "auto",
+                "marginRight": "auto",
+                "boxShadow": "5px 5px 15px rgba(0,0,0,0.2)",
+                "color": "#333",
+                "fontWeight": "bold",
+            },
         ),
-        # ส่วนกลาง: แบ่ง Sidebar (ซ้าย) และ Graphs (ขวา)
         html.Div(
             [
                 # --- Sidebar (ด้านซ้าย) ---
@@ -45,9 +57,7 @@ app.layout = html.Div(
                     [
                         html.Div(
                             [
-                                html.Label(
-                                    "เลือกกลุ่มข้อมูล (แกน X):", style={"fontWeight": "bold"}
-                                ),
+                                html.Label("Data Group:", style={"fontWeight": "bold"}),
                                 dcc.Dropdown(
                                     id="x-axis-select",
                                     options=x_options,
@@ -60,7 +70,7 @@ app.layout = html.Div(
                         html.Div(
                             [
                                 html.Label(
-                                    "เลือกสถิติที่สนใจ (แกน Y):",
+                                    "Statistic:",
                                     style={"fontWeight": "bold"},
                                 ),
                                 dcc.Dropdown(
@@ -113,21 +123,27 @@ app.layout = html.Div(
         # ตารางข้อมูลด้านล่าง
         html.Div(
             [
-                html.H3("Data Table", style={"marginTop": "40px"}),
+                html.Hr(),
                 dag.AgGrid(
                     rowData=df.to_dict("records"),
                     columnDefs=[{"field": i} for i in df.columns],
                     dashGridOptions={"pagination": True},
+                    columnSize="responsiveSizeToFit",
                     style={"height": "400px"},
                 ),
             ],
-            style={"padding": "20px"},
         ),
-    ]
+    ],
+    style={
+        "fontFamily": "Agency FB, sans-serif",
+        "padding": "20px",
+        "backgroundColor": "#aeaeae",
+        "borderRadius": "10px",
+        "boxShadow": "2px 2px 5px rgba(0,0,0,0.1)",
+    },
 )
 
 
-# 3. แก้ไข Callback ให้ส่งค่าไปยัง 2 กราฟ
 @app.callback(
     Output("dynamic-graph", "figure"),
     Output("dynamic-pie-chart", "figure"),
@@ -144,29 +160,47 @@ def update_graph(x_col, y_col):
         y=y_col,
         histfunc="avg",
         category_orders=order,
-        title=f"Average {y_col.replace('_', ' ')} by {x_col}",
+        title=f"Average {y_col.replace('_', ' ')} by {x_col.replace('_', ' ')}",
         color=x_col,
     )
-    fig_bar.update_layout(yaxis_title="Average Value", transition_duration=500)
+    fig_bar.update_layout(
+        yaxis_title="Average Value",
+        xaxis_title=x_col.replace("_", " "),
+        transition_duration=500,
+        font_family="Agency FB, sans-serif",
+        font_size=18,
+    )
 
     # กราฟที่ 2: Pie Chart
     pie_fig = px.pie(
         df,
         names=x_col,
-        title=f"Distribution of {x_col}",
-        hole=0.3,  # ทำเป็น Donut chart ให้ดูทันสมัย
+        title=f"Distribution of {x_col.replace('_', ' ')}",
+        hole=0.3,
     )
-    pie_fig.update_layout(transition_duration=500)
+    pie_fig.update_layout(
+        transition_duration=500,
+        font_family="Agency FB, sans-serif",
+        font_size=18,
+    )
 
+    # กราฟที่ 3: Box Plot
     fig_box = px.box(
         df,
         x=x_col,
         y=y_col,
         color=x_col,
         category_orders=order,
-        title=f"Distribution Range of {y_col.replace('_', ' ')} by {x_col}",
+        title=f"Distribution Range of {y_col.replace('_', ' ')} by {x_col.replace('_', ' ')}",
     )
-    fig_box.update_layout(showlegend=False, transition_duration=500)
+    fig_box.update_layout(
+        yaxis_title=y_col.replace("_", " "),
+        xaxis_title=x_col.replace("_", " "),
+        showlegend=False,
+        transition_duration=500,
+        font_family="Agency FB, sans-serif",
+        font_size=18,
+    )
 
     return fig_bar, pie_fig, fig_box
 
