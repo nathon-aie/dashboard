@@ -4,20 +4,26 @@ import dash_ag_grid as dag
 import pandas as pd
 import plotly.express as px
 
+# โหลดข้อมูลหลักจากไฟล์ CSV
 df = pd.read_csv("Dataset/Smartphone_Usage_Productivity_Dataset_50000.csv")
 
+# กำหนดช่วงอายุเพื่อสร้างคอลัมน์ Age_Group
 bins = [0, 20, 30, 40, 50, 100]
 labels = ["<20", "21-30", "31-40", "41-50", ">50"]
 df["Age_Group"] = pd.cut(df["Age"], bins=bins, labels=labels)
+
+# บังคับลำดับหมวดหมู่ให้เรียงตามช่วงอายุที่กำหนด
 cat_type = CategoricalDtype(categories=labels, ordered=True)
 df["Age_Group"] = df["Age_Group"].astype(cat_type)
 
+# ตัวเลือกแกน X (มิติการจัดกลุ่มข้อมูล)
 x_options = [
     {"label": "Age Group", "value": "Age_Group"},
     {"label": "Gender", "value": "Gender"},
     {"label": "Occupation", "value": "Occupation"},
 ]
 
+# ตัวเลือกแกน Y (ตัวชี้วัดทางสถิติ)
 y_options = [
     {"label": "Daily Phone Hours", "value": "Daily_Phone_Hours"},
     {"label": "Social Media Hours", "value": "Social_Media_Hours"},
@@ -28,8 +34,10 @@ y_options = [
     {"label": "Weekend Phone Hours", "value": "Weekend_Screen_Time_Hours"},
 ]
 
+# สร้าง Dash app instance
 app = Dash(__name__)
 
+# โครงสร้างหน้า Dashboard ทั้งหมด (หัวข้อ + แถบตัวเลือก + กราฟ + ตาราง)
 app.layout = html.Div(
     [
         html.H1(
@@ -152,8 +160,10 @@ app.layout = html.Div(
     Input("y-axis-select", "value"),
 )
 def update_graph(x_col, y_col):
-    # กราฟที่ 1: Histogram (Bar)
+    # กำหนดลำดับหมวดหมู่เฉพาะกรณีใช้ Age_Group เพื่อให้เรียงช่วงอายุถูกต้อง
     order = {"Age_Group": labels} if x_col == "Age_Group" else None
+
+    # กราฟที่ 1: Bar chart แสดงค่าเฉลี่ยของตัวชี้วัด y_col แยกตามกลุ่ม x_col
     fig_bar = px.histogram(
         df,
         x=x_col,
@@ -171,7 +181,7 @@ def update_graph(x_col, y_col):
         font_size=18,
     )
 
-    # กราฟที่ 2: Pie Chart
+    # กราฟที่ 2: Pie chart แสดงสัดส่วนการกระจายของกลุ่มข้อมูล x_col
     pie_fig = px.pie(
         df,
         names=x_col,
@@ -184,7 +194,7 @@ def update_graph(x_col, y_col):
         font_size=18,
     )
 
-    # กราฟที่ 3: Box Plot
+    # กราฟที่ 3: Box plot แสดงการกระจายค่า (median, quartiles, outliers)
     fig_box = px.box(
         df,
         x=x_col,
@@ -202,8 +212,10 @@ def update_graph(x_col, y_col):
         font_size=18,
     )
 
+    # คืนค่ากราฟทั้ง 3 ตัวไปแสดงผลใน component ตาม Output ที่ประกาศไว้
     return fig_bar, pie_fig, fig_box
 
 
 if __name__ == "__main__":
+    # รันแอปในโหมด debug สำหรับพัฒนา
     app.run(debug=True)
