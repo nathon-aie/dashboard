@@ -54,11 +54,17 @@ app.layout = html.Div(
                 title="Distribution of Age Groups",
             ),
         ),
+        dcc.Graph(
+            figure=px.pie(
+                df,
+                names="Occupation",
+                title="Distribution of Occupations",
+            ),
+        ),
         # ตารางข้อมูล
         dag.AgGrid(
             rowData=df.to_dict("records"),
             columnDefs=[{"field": i} for i in df.columns],
-            dashGridOptions={"pagination": True},
         ),
     ]
 )
