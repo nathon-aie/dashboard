@@ -97,17 +97,16 @@ app.layout = html.Div(
                                 ),
                             ],
                             style={"display": "flex"},
-                        )
+                        ),
+                        html.Div(
+                            [dcc.Graph(id="dynamic-box-plot")],
+                            style={"marginTop": "20px"},
+                        ),
                     ],
                     style={"width": "80%"},
                 ),
             ],
             style={"display": "flex", "padding": "0 20px"},
-        ),
-        dcc.Graph(
-            figure=px.box(
-                df, x="Occupation", y="Sleep_Hours", title="Phone Usage by Occupation"
-            )
         ),
         # ตารางข้อมูลด้านล่าง
         html.Div(
@@ -129,14 +128,15 @@ app.layout = html.Div(
 # 3. แก้ไข Callback ให้ส่งค่าไปยัง 2 กราฟ
 @app.callback(
     Output("dynamic-graph", "figure"),
-    Output("dynamic-pie-chart", "figure"),  # เพิ่ม Output สำหรับ Pie Chart
+    Output("dynamic-pie-chart", "figure"),
+    Output("dynamic-box-plot", "figure"),
     Input("x-axis-select", "value"),
     Input("y-axis-select", "value"),
 )
 def update_graph(x_col, y_col):
     # กราฟที่ 1: Histogram (Bar)
     order = {"Age_Group": labels} if x_col == "Age_Group" else None
-    fig = px.histogram(
+    fig_bar = px.histogram(
         df,
         x=x_col,
         y=y_col,
@@ -145,7 +145,7 @@ def update_graph(x_col, y_col):
         title=f"Average {y_col.replace('_', ' ')} by {x_col}",
         color=x_col,
     )
-    fig.update_layout(yaxis_title="Average Value", transition_duration=500)
+    fig_bar.update_layout(yaxis_title="Average Value", transition_duration=500)
 
     # กราฟที่ 2: Pie Chart
     pie_fig = px.pie(
@@ -156,7 +156,17 @@ def update_graph(x_col, y_col):
     )
     pie_fig.update_layout(transition_duration=500)
 
-    return fig, pie_fig  # ส่งกลับไป 2 กราฟตามลำดับ Output
+    fig_box = px.box(
+        df,
+        x=x_col,
+        y=y_col,
+        color=x_col,
+        category_orders=order,
+        title=f"Distribution Range of {y_col.replace('_', ' ')} by {x_col}",
+    )
+    fig_box.update_layout(showlegend=False, transition_duration=500)
+
+    return fig_bar, pie_fig, fig_box
 
 
 if __name__ == "__main__":
