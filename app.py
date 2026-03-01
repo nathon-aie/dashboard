@@ -37,37 +37,49 @@ app.layout = html.Div(
             [
                 html.Div(
                     [
-                        html.Label("เลือกกลุ่มข้อมูล:"),
+                        html.Label("เลือกกลุ่มข้อมูล (แกน X):"),
                         dcc.Dropdown(
                             id="x-axis-select", options=x_options, value="Age_Group"
                         ),
                     ],
-                    style={
-                        "width": "45%",
-                        "display": "inline-block",
-                        "padding": "10px",
-                    },
-                ),
+                    style={"marginBottom": "10px"},
+                ),  # ใส่ Margin ล่างเพื่อให้มีระยะห่าง
                 html.Div(
                     [
-                        html.Label("เลือกสถิติที่สนใจ:"),
+                        html.Label("เลือกสถิติที่สนใจ (แกน Y):"),
                         dcc.Dropdown(
                             id="y-axis-select",
                             options=y_options,
                             value="Daily_Phone_Hours",
                         ),
-                    ],
-                    style={
-                        "width": "45%",
-                        "display": "inline-block",
-                        "padding": "10px",
-                    },
+                    ]
                 ),
             ],
-            style={"textAlign": "center", "marginBottom": "20px"},
+            style={"width": "30%", "margin": "20px auto", "textAlign": "left"},
         ),
         # ส่วนแสดงกราฟ
-        dcc.Graph(id="dynamic-graph"),
+        html.Div(
+            [
+                # กราฟซ้าย (กราฟ Dynamic ที่เลือกจาก Dropdown)
+                html.Div(
+                    [dcc.Graph(id="dynamic-graph")],
+                    style={"width": "50%", "display": "inline-block"},
+                ),
+                # กราฟขวา (กราฟคงที่ หรือกราฟอื่นๆ)
+                html.Div(
+                    [
+                        dcc.Graph(
+                            id="static-pie-chart",
+                            figure=px.pie(
+                                df, names="Device_Type", title="Device Distribution"
+                            ),
+                        )
+                    ],
+                    style={"width": "50%", "display": "inline-block"},
+                ),
+            ],
+            style={"display": "flex"},
+        ),  # ใช้ Flex เพื่อให้ Div ลูกสองอันวางขนานกัน
         dcc.Graph(
             figure=px.pie(
                 df,
